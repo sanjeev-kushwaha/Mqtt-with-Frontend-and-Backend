@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uwanxt</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        <span><img src="utils/logo.png" alt="" /></span>
+      </h1>
+      <h3>
+        NOTE :
+        <span>First You Need To Upload .bin File ⚠</span>
+      </h3>
+
+      <form id="upload-form" enctype="multipart/form-data">
+        <input class="input-file" type="file" name="file" id="file" required />
+        <button type="submit">Upload File</button>
+      </form>
+
+      <p id="status"></p>
+    </div>
+    <form class="container">
+      <!-- Connect Form -->
+
+      <div class="form-group">
+        <h3>Connect to MQTT *</h3>
+        <button type="button" onclick="connectMQTT(event)">Connect</button>
+        <p id="connection-status"></p>
+      </div>
+
+      <!-- Subscribe Form -->
+      <div class="form-group">
+        <h3>Subscribe to Topic *</h3>
+        <input
+          type="text"
+          id="subscribe-topic"
+          placeholder="Topic (e.g., test/topic)" />
+        <button type="button" onclick="subscribeTopic()">Subscribe</button>
+        <p id="subscribe-status"></p>
+      </div>
+
+      <!-- Publish Form -->
+      <div class="form-group">
+        <h3>Publish Message *</h3>
+        <input
+          type="text"
+          id="publish-topic"
+          placeholder="Topic (e.g., test/topic)" />
+        <input type="number" id="publish-value" placeholder="Value (0 or 1)" />
+        <button type="button" onclick="publishMessage()">Publish</button>
+        <p id="publish-status"></p>
+      </div>
+    </form>
+
+    <script>
+      const apiUrl = "http://localhost:3000";
+      async function connectMQTT(e) {
+        e.preventDefault(); 
+        const host = "uwanxt.com";
+        const port = "9237";
+        const username = "IoTSunKom";
+        const password = "iOtInkOM156*7";
+        const data = {
+          host,
+          port,
+          username,
+          password,
+        };
+        
+        try {
+          const response = await fetch(`${apiUrl}/connect`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok == true) {
+            document.getElementById("connection-status").innerText =
+              "Connected successfully!";
+          } else {
+            document.getElementById("connection-status").innerText =
+              "Connected Failed!";
+          }
+        } catch (error) {
+          document.getElementById("connection-status").innerText =
+            "Error: " + error.message;
+        }
+      }
+
+      // Function to subscribe to a topic
+      async function subscribeTopic() {
+        const topic = document.getElementById("subscribe-topic").value;
+
+        const data = { topic };
+
+        try {
+          const response = await fetch(`${apiUrl}/subscribe`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+          if (response.ok == true) {
+            document.getElementById("subscribe-status").innerText =
+              "Subscribed to topic!";
+          } else {
+            document.getElementById("subscribe-status").innerText =
+              " Failed to Subscribe topic!";
+          }
+        } catch (error) {
+          document.getElementById("subscribe-status").innerText =
+            "Error: " + error.message;
+        }
+      }
+
+      // Function to publish a message (0 or 1)
+      async function publishMessage() {
+        const topic = document.getElementById("publish-topic").value;
+        const value = parseInt(document.getElementById("publish-value").value);
+
+        if (value !== 0 && value !== 1) {
+          document.getElementById("publish-status").innerText =
+            "Value must be 0 or 1!";
+          return;
+        }
+
+        const data = { topic, value };
+        try {
+          const response = await fetch(`${apiUrl}/publish`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+          if (response.ok == true) {
+            document.getElementById("publish-status").innerText =
+              "Message published successfully!";
+          }
+        } catch (error) {
+          document.getElementById("publish-status").innerText =
+            "Error: " + error;
+        }
+      }
+
+      document
+        .getElementById("upload-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+          const fileInput = document.getElementById("file");
+
+          formData.append("file", fileInput.files[0]);
+
+          try {
+            const response = await fetch("/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error("File upload failed");
+            }
+
+            const data = await response.json();
+            document.getElementById(
+              "status"
+            ).textContent = `File uploaded successfully`;
+          } catch (error) {
+            document.getElementById(
+              "status"
+            ).textContent = `Error: ${error.message}`;
+          }
+        });
+    </script>
+  </body>
+</html>
