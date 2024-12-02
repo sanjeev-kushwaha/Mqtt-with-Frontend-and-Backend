@@ -6,7 +6,7 @@ const multer = require("multer");
 const fs = require("fs");
 
 app.use(express.json());
-const port = 3000;
+const port = 1899;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
